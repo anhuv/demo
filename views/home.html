@@ -1,0 +1,224 @@
+{% extends "layout.html" %} {% block content %}
+<script>
+  $(document).ready(function () {
+    $("#add_symbol").click(function () {
+      $(".ui.modal").modal("show");
+    });
+
+    $("#save").click(function () {
+      var textareaContent = $("#symbols").val();
+      var symbols = textareaContent.split("\n");
+
+      for (var i = 0; i < symbols.length; ++i) {
+        console.log(symbols[i]);
+
+        $.ajax({
+          url: "/record",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ symbol: symbols[i] }),
+          dataType: "json",
+        });
+      }
+
+      $(".ui.modal").modal("hide");
+    });
+  });
+</script>
+
+<form method="get">
+  {% if sensor_name %}
+  <h2 style="text-align: center; color: blue">
+    Sensor {{ sensor_name or '' }}
+  </h2>
+  {% endif %} {% if sensor_name %}
+  <div>
+    <canvas id="myChart"></canvas>
+  </div>
+  {% endif %}
+  <h2>Filters</h2>
+
+  <div class="ui input">
+    <input
+      name="from_date"
+      type="date"
+      placeholder="From Date"
+      value="{{ from_date or '' }}"
+    />
+  </div>
+
+  <div class="ui input">
+    <input
+      name="to_date"
+      type="date"
+      placeholder="To Date"
+      value="{{ to_date or '' }}"
+    />
+  </div>
+
+  <!-- <div class="ui checkbox">
+  <input name="ma50" type="checkbox" {% if ma50 %}checked="checked"{% endif %}>
+  <label>Above 50 Day MA</label>
+</div>
+
+<div class="ui checkbox">
+  <input name="id_sensor" type="checkbox" {% if id_sensor %}checked="checked"{% endif %}>
+  <label>ID Sensor</label>
+</div> -->
+
+  <button type="submit" class="ui button primary">Filter</button>
+</form>
+
+<!-- <button id="add_symbol" class="ui button secondary">Add Symbols</button> -->
+
+<table class="ui celled table" id="myTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Temperature (°C)</th>
+      <th>Humidity (%)</th>
+      <th>PH</th>
+      <th>PM10 (µg/m³)</th>
+      <th>PM2.5 (µg/m³)</th>
+      <th>Date</th>
+
+      <!-- <th>Dividend Yield</th>
+      <th>50 Day MA</th>-->
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in records %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td>{{ r.temperature }}</td>
+      <td>{{ r.humidity }}</td>
+      <td>{{ r.ph }}</td>
+
+      <td>{{ r.pm10 }}</td>
+      <td>{{ r.pm2_5 }}</td>
+      <td>{{ r.date_updated }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">Add Stocks</div>
+  <div class="content">
+    <div class="ui form">
+      <div class="field">
+        <label>Symbols</label>
+        <textarea id="symbols"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div id="save" class="ui positive right labeled icon button">
+      Add Symbols
+      <i class="plus icon"></i>
+    </div>
+  </div>
+</div>
+
+<!-- <meta id="my_playlist_data" data-temperature="{{ temList }}" data-time="{{ temTime }}"> -->
+
+<script>
+  // var temperature = $('#my_playlist_data').data('temperature');
+  // var time = $('#my_playlist_data').data('time');
+  // var time = {{temTime}};
+  // records ='{{sensor_name}}' ;
+  // records =sensor_name ;
+  var date = [];
+  var temperature = [];
+  var humidity = [];
+
+  //gets table
+  var oTable = document.getElementById("myTable");
+
+  //gets rows of table
+  var rowLength = oTable.rows.length;
+
+  //loops through rows
+  for (i = 1; i < rowLength; i++) {
+    //gets cells of current row
+    var oCells = oTable.rows.item(i).cells;
+
+    //gets amount of cells of current row
+    var cellLength = oCells.length;
+    
+    if (oCells.item(1).innerHTML != 'None'){
+      temperature.push(oCells.item(1).innerHTML);
+      humidity.push(oCells.item(2).innerHTML);
+      date.push(oCells.item(6).innerHTML);
+    }
+    
+
+    //loops through each cell in current row
+    //  for(var j = 0; j < cellLength; j++){
+    //     /* get your cell info here */
+    //     var cellVal = oCells.item(j).innerHTML;
+    //     console.log(cellVal);
+    //  }
+  }
+  // temperature[3] = "None"
+  const labels = date;
+
+  const data = {
+    labels: labels,
+    datasets: [
+      
+      {
+        type: 'line',
+        label: "Humidity",
+        backgroundColor: "blue",
+        borderColor: "blue",
+        data: humidity,
+        yAxisID: 'y1',
+      },
+      {
+        type: 'bar',
+        label: "Temperature",
+        backgroundColor: "orange",
+        borderColor: "rgb(255, 99, 132)",
+        data: temperature,
+        yAxisID: 'y',
+      },
+    ],
+  };
+
+  const config = {
+  type: 'line',
+  data: data,
+  options: {
+    responsive: true,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    stacked: false,
+    scales: {
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        
+
+        // grid line settings
+        grid: {
+          drawOnChartArea: false, // only want the grid lines for one axis to show up
+        },
+      },
+    }
+  },
+};
+
+  const myChart = new Chart(document.getElementById("myChart"), config);
+  //
+</script>
+{% endblock %}

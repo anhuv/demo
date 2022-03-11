@@ -1,0 +1,215 @@
+{% extends "layout.html" %} {% block content %}
+<script>
+  function del(id) {
+    $.ajax({
+      url: "/sensor/delete/" + id,
+      type: "DELETE",
+    });
+    window.location.href = window.location.href;
+  }
+
+  function view(id) {
+    $("#view_sensor_table").find("tr:gt(0)").remove();
+
+    $.ajax({
+      url: "/sensor/lastest/" + id,
+      type: "GET",
+      success: function (res) {
+        $("#sensor_name").text(res.sensor_name);
+
+        for (let i = 0; i < res.lastest.length; ++i) {
+          $("#view_sensor_table tr:last").after(
+            "<tr><td>" +
+              res.lastest[i].last_date +
+              "</td><td>" +
+              res.lastest[i].key +
+              "</td><td>" +
+              res.lastest[i].value +
+              "</td></tr>"
+          );
+        }
+        // $("#view_sensor_table > tbody").empty();
+      },
+    });
+    $("#view_sensor_ui").modal("show");
+  }
+
+  $(document).ready(function () {
+    $("#add_sensor").click(function () {
+      $("#add_sensor_ui").modal("show");
+    });
+
+    $("#save").click(function () {
+      var name = $("#name").val();
+      var latitude = $("#latitude").val();
+      var longitude = $("#longitude").val();
+
+      $.ajax({
+        url: "/sensor/create",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+          name: name,
+          latitude: latitude,
+          longitude: longitude,
+          profile: "default",
+        }),
+        dataType: "json",
+      });
+
+      $(".ui.modal").modal("hide");
+      window.location.href = window.location.href;
+    });
+  });
+</script>
+
+
+
+<button id="add_sensor" class="ui button secondary">Add Sensors</button>
+
+<table class="ui celled table">
+  <!-- <table class="ui inverted grey striped table"> -->
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Created time</th>
+      <th>Name</th>
+      <th>Device profile</th>
+      <th>Location</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sensor in sensors %}
+    <tr>
+      <td>{{ sensor.id }}</td>
+      <td>{{ sensor.created_date }}</td>
+      <td>
+        <a class="ui teal label" href="/?sensor_id={{ sensor.id }}"
+          >{{ sensor.name }}</a
+        >
+      </td>
+      <th><div class="ui grey circular label">{{ sensor.profile }}</div></th>
+      <td>
+        <a
+          class="ui label"
+          href="https://www.google.com/maps/place/{{ sensor.latitude }}+{{ sensor.longitude }}"
+        >
+          <i class="map marker alternate icon"></i>
+          {{ sensor.longitude }} , {{ sensor.latitude }}
+        </a>
+        <!-- {{ sensor.longitude }} , {{ sensor.latitude }} <i class="eye icon"></i></td> -->
+      </td>
+      <th>
+        <div
+          class="ui vertical animated button"
+          tabindex="0"
+          style="width: 100px"
+        >
+          <!-- <a
+              class="hidden content"
+              href="http://google.com"
+              style="font-size: small"
+              >Latest telemetry</a
+            > -->
+          <div
+            class="hidden content"
+            style="font-size: small"
+            onclick="view('{{ sensor.id }}')"
+          >
+            Latest telemetry
+          </div>
+          <div class="visible content">
+            <i class="eye icon"></i>
+          </div>
+        </div>
+        <div
+          class="ui vertical animated button"
+          tabindex="0"
+          style="width: 100px"
+        >
+          <div
+            class="hidden content"
+            id="delete"
+            onclick="del('{{ sensor.id }}')"
+          >
+            Delete
+          </div>
+          <div class="visible content">
+            <i class="trash icon"></i>
+          </div>
+        </div>
+      </th>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="ui modal" id="add_sensor_ui">
+  <i class="close icon"></i>
+  <div class="header">Add Sensors</div>
+  <div class="content">
+    <!-- <div class="ui form">
+      <div class="field">
+        <label>Sensor Name</label>
+        <textarea id="names"></textarea>
+      </div>
+    </div> -->
+    <label>Sensor Name</label>
+    <div class="ui input">
+      <input
+        id="name"
+        type="text"
+        placeholder="Name"
+        value="{{ Name or '' }}"
+      />
+    </div>
+    <label>Latitude</label>
+    <div class="ui input">
+      <input
+        id="latitude"
+        type="text"
+        placeholder="Latitude (Example: 21)"
+        value="{{ latitude or '' }}"
+      />
+    </div>
+    <label>Longitude</label>
+    <div class="ui input">
+      <input
+        id="longitude"
+        type="text"
+        placeholder="Longitude (Example: 105)"
+        value="{{ longitude or '' }}"
+      />
+    </div>
+  </div>
+  <div class="actions">
+    <div id="save" class="ui positive right labeled icon button">
+      Add Sensor
+      <i class="plus icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="ui modal" id="view_sensor_ui">
+  <i class="close icon"></i>
+  <div class="header ui teal label" id="sensor_name">Sensor</div>
+  <div class="content">
+    <div class="header">Latest telemetry</div>
+    <table class="ui celled table" id="view_sensor_table">
+      <!-- <table class="ui inverted grey striped table"> -->
+      <thead>
+        <tr>
+          <th>Last update time</th>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <title>Magun Server</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+  </head>
+
+  <body>
+    <div class="ui container">
+      <!-- <h1  class="ui">Magun Server</h1> -->
+      <!-- <h2 class="ui icon header teal">
+        <i class="medium icon"></i>
+        <div class="content">
+            Magun Server
+        </div>
+      </h2> -->
+
+      <h2 class="ui header">
+        <i class="medium icon teal"></i>
+        <div class="content">
+          Magun Server
+          <div class="sub header">3D Map-ast Guiding of UVs</div>
+        </div>
+      </h2>
+
+      <div class="ui inverted menu black ">
+        <a  {% if active_page_home %} class ="item active"  {% else %} class="item" {% endif %} href="/"> Home </a>
+        <a  {% if active_page_sensor %} class ="item active"  {% else %} class="item" {% endif %} href="/sensor"> Sensors </a>
+      </div>
+      {% block content %} {% endblock %}
+    </div>
+  </body>
+</html>
